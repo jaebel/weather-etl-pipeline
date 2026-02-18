@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:18 # 18.2 is the latest at the time of development
+    container_name: weather_etl_db
+    environment:
+      POSTGRES_USER: weather_user
+      POSTGRES_PASSWORD: weather_pass
+      POSTGRES_DB: weather_data
+    ports:
+      - "5433:5432" # Default postgres port is 5432 so we change the external one to avoid conflct with my personal local install
+    volumes:
+      - postgres_data:/var/lib/postgresql # Official default location for versions 18+
+
+volumes:
+  postgres_data:
