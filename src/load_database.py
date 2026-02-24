@@ -2,6 +2,7 @@ import psycopg2
 import os
 from dotenv import load_dotenv
 from extract import fetch_weather_data, load_config
+from validate_data import validate_weather_record, log_validation_results
 
 # Load environment variables
 load_dotenv()
@@ -243,6 +244,17 @@ def main():
             # Process each day of weather data
             weather_days = api_response.get('data', [])
             for day_data in weather_days:
+
+                is_valid, warnings = validate_weather_record(day_data)
+    
+                if not is_valid:
+                    print(f"Skipping record: {warnings}")
+                    continue
+                
+                # Log warnings (but still insert)
+                if warnings:
+                    log_validation_results(city['name'], day_data.get('datetime'), warnings)
+
                 # Transform: Convert API format to DB format
                 transformed_data = transform_weather_record(day_data)
                 
