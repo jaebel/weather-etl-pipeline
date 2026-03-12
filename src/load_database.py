@@ -59,18 +59,36 @@ def transform_weather_record(day_data):
     """
     # Extract nested weather object
     weather = day_data.get('weather', {})
+
+    # Derived field - Temperature range
+    max_temp = day_data.get('max_temp')
+    min_temp = day_data.get('min_temp')
+    temp_range = max_temp - min_temp if (max_temp and min_temp) else None
+
+    # Derived field - Precipitation category
+    precip = day_data.get('precip', 0)
+    if precip == 0:
+        precip_category = 'None'
+    elif precip < 2.5:
+        precip_category = 'Light'
+    elif precip < 10:
+        precip_category = 'Moderate'
+    else:
+        precip_category = 'Heavy'
     
     return {
         'forecast_date': day_data.get('datetime'),
         'temp': day_data.get('temp'),
         'max_temp': day_data.get('max_temp'),
         'min_temp': day_data.get('min_temp'),
+        'temp_range': temp_range,
         'apparent_max_temp': day_data.get('app_max_temp'),
         'apparent_min_temp': day_data.get('app_min_temp'),
         'high_temp': day_data.get('high_temp'),
         'low_temp': day_data.get('low_temp'),
         'dewpt': day_data.get('dewpt'),
         'precipitation': day_data.get('precip'),
+        'precip_category': precip_category,
         'pop': day_data.get('pop'),
         'snow': day_data.get('snow'),
         'snow_depth': day_data.get('snow_depth'),
@@ -108,9 +126,9 @@ def insert_weather_record(cursor, city_id, weather_data):
     """
     cursor.execute("""
         INSERT INTO daily_weather (
-            city_id, forecast_date, temp, max_temp, min_temp,
+            city_id, forecast_date, temp, max_temp, min_temp, temp_range,
             apparent_max_temp, apparent_min_temp, high_temp, low_temp, dewpt,
-            precipitation, pop, snow, snow_depth,
+            precipitation, precip_category, pop, snow, snow_depth,
             wind_speed, wind_gust_spd, wind_dir, wind_cdir, wind_cdir_full,
             clouds, clouds_hi, clouds_low, clouds_mid, vis,
             humidity, pressure, slp, ozone, uv,
@@ -118,9 +136,9 @@ def insert_weather_record(cursor, city_id, weather_data):
             moon_phase, moon_phase_lunation, sunrise_ts, sunset_ts, moonrise_ts, moonset_ts,
             max_dhi, ts
         ) VALUES (
+            %s, %s, %s, %s, %s, %s,
             %s, %s, %s, %s, %s,
             %s, %s, %s, %s, %s,
-            %s, %s, %s, %s,
             %s, %s, %s, %s, %s,
             %s, %s, %s, %s, %s,
             %s, %s, %s, %s, %s,
@@ -132,12 +150,14 @@ def insert_weather_record(cursor, city_id, weather_data):
             temp = EXCLUDED.temp,
             max_temp = EXCLUDED.max_temp,
             min_temp = EXCLUDED.min_temp,
+            temp_range = EXCLUDED.temp_range,
             apparent_max_temp = EXCLUDED.apparent_max_temp,
             apparent_min_temp = EXCLUDED.apparent_min_temp,
             high_temp = EXCLUDED.high_temp,
             low_temp = EXCLUDED.low_temp,
             dewpt = EXCLUDED.dewpt,
             precipitation = EXCLUDED.precipitation,
+            precip_category = EXCLUDED.precip_category,
             pop = EXCLUDED.pop,
             snow = EXCLUDED.snow,
             snow_depth = EXCLUDED.snow_depth,
@@ -173,12 +193,14 @@ def insert_weather_record(cursor, city_id, weather_data):
         weather_data['temp'],
         weather_data['max_temp'],
         weather_data['min_temp'],
+        weather_data['temp_range'],
         weather_data['apparent_max_temp'],
         weather_data['apparent_min_temp'],
         weather_data['high_temp'],
         weather_data['low_temp'],
         weather_data['dewpt'],
         weather_data['precipitation'],
+        weather_data['precip_category'],
         weather_data['pop'],
         weather_data['snow'],
         weather_data['snow_depth'],

@@ -99,6 +99,10 @@ def create_tables():
                        
                 -- Solar radiation
                 max_dhi DECIMAL(7, 4),
+                       
+                -- Derived fields
+                temp_range DECIMAL(5, 2),
+                precip_category VARCHAR(20),
                 
                 -- Metadata
                 ts BIGINT,
