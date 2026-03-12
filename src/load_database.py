@@ -126,38 +126,42 @@ def insert_weather_record(cursor, city_id, weather_data):
     """
     cursor.execute("""
         INSERT INTO daily_weather (
-            city_id, forecast_date, temp, max_temp, min_temp, temp_range,
+            city_id, forecast_date,
+            temp, max_temp, min_temp,
             apparent_max_temp, apparent_min_temp, high_temp, low_temp, dewpt,
-            precipitation, precip_category, pop, snow, snow_depth,
+            precipitation, pop, snow, snow_depth,
             wind_speed, wind_gust_spd, wind_dir, wind_cdir, wind_cdir_full,
             clouds, clouds_hi, clouds_low, clouds_mid, vis,
             humidity, pressure, slp, ozone, uv,
             weather_code, weather_description, weather_icon,
             moon_phase, moon_phase_lunation, sunrise_ts, sunset_ts, moonrise_ts, moonset_ts,
-            max_dhi, ts
+            max_dhi,
+            temp_range, precip_category,
+            ts
         ) VALUES (
-            %s, %s, %s, %s, %s, %s,
+            %s, %s,
+            %s, %s, %s,
             %s, %s, %s, %s, %s,
-            %s, %s, %s, %s, %s,
+            %s, %s, %s, %s,
             %s, %s, %s, %s, %s,
             %s, %s, %s, %s, %s,
             %s, %s, %s, %s, %s,
             %s, %s, %s,
             %s, %s, %s, %s, %s, %s,
-            %s, %s
+            %s,
+            %s, %s,
+            %s
         )
         ON CONFLICT (city_id, forecast_date) DO UPDATE SET
             temp = EXCLUDED.temp,
             max_temp = EXCLUDED.max_temp,
             min_temp = EXCLUDED.min_temp,
-            temp_range = EXCLUDED.temp_range,
             apparent_max_temp = EXCLUDED.apparent_max_temp,
             apparent_min_temp = EXCLUDED.apparent_min_temp,
             high_temp = EXCLUDED.high_temp,
             low_temp = EXCLUDED.low_temp,
             dewpt = EXCLUDED.dewpt,
             precipitation = EXCLUDED.precipitation,
-            precip_category = EXCLUDED.precip_category,
             pop = EXCLUDED.pop,
             snow = EXCLUDED.snow,
             snow_depth = EXCLUDED.snow_depth,
@@ -186,6 +190,8 @@ def insert_weather_record(cursor, city_id, weather_data):
             moonrise_ts = EXCLUDED.moonrise_ts,
             moonset_ts = EXCLUDED.moonset_ts,
             max_dhi = EXCLUDED.max_dhi,
+            temp_range = EXCLUDED.temp_range,
+            precip_category = EXCLUDED.precip_category,
             ts = EXCLUDED.ts
     """, (
         city_id,
@@ -193,14 +199,12 @@ def insert_weather_record(cursor, city_id, weather_data):
         weather_data['temp'],
         weather_data['max_temp'],
         weather_data['min_temp'],
-        weather_data['temp_range'],
         weather_data['apparent_max_temp'],
         weather_data['apparent_min_temp'],
         weather_data['high_temp'],
         weather_data['low_temp'],
         weather_data['dewpt'],
         weather_data['precipitation'],
-        weather_data['precip_category'],
         weather_data['pop'],
         weather_data['snow'],
         weather_data['snow_depth'],
@@ -229,6 +233,8 @@ def insert_weather_record(cursor, city_id, weather_data):
         weather_data['moonrise_ts'],
         weather_data['moonset_ts'],
         weather_data['max_dhi'],
+        weather_data['temp_range'],
+        weather_data['precip_category'],
         weather_data['ts']
     ))
 
