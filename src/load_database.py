@@ -81,14 +81,12 @@ def transform_weather_record(day_data):
         'temp': day_data.get('temp'),
         'max_temp': day_data.get('max_temp'),
         'min_temp': day_data.get('min_temp'),
-        'temp_range': temp_range,
         'apparent_max_temp': day_data.get('app_max_temp'),
         'apparent_min_temp': day_data.get('app_min_temp'),
         'high_temp': day_data.get('high_temp'),
         'low_temp': day_data.get('low_temp'),
         'dewpt': day_data.get('dewpt'),
         'precipitation': day_data.get('precip'),
-        'precip_category': precip_category,
         'pop': day_data.get('pop'),
         'snow': day_data.get('snow'),
         'snow_depth': day_data.get('snow_depth'),
@@ -117,6 +115,9 @@ def transform_weather_record(day_data):
         'moonrise_ts': day_data.get('moonrise_ts'),
         'moonset_ts': day_data.get('moonset_ts'),
         'max_dhi': day_data.get('max_dhi'),
+        # Derived fields
+        'temp_range': temp_range,
+        'precip_category': precip_category,
         'ts': day_data.get('ts')
     }
 
