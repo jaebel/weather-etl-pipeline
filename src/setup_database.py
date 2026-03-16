@@ -2,9 +2,15 @@ import psycopg2
 from psycopg2 import sql
 import os
 from dotenv import load_dotenv
+import logging
+from logger_config import setup_logging
 
 # Load environment variables
 load_dotenv()
+
+# Configure logging
+setup_logging('setup.log')
+logger = logging.getLogger(__name__)
 
 def create_tables():
     """Create the database tables for weather data"""
@@ -23,7 +29,7 @@ def create_tables():
         conn = psycopg2.connect(**conn_params)
         cursor = conn.cursor()
         
-        print("Connected to database successfully!")
+        logger.info("Connected to database successfully!")
         
         # Create cities table
         cursor.execute("""
@@ -38,7 +44,7 @@ def create_tables():
                 UNIQUE(latitude, longitude)
             );
         """)
-        print("Created 'cities' table")
+        logger.info("Created 'cities' table")
         
         # Create daily_weather table
         cursor.execute("""
@@ -111,21 +117,21 @@ def create_tables():
                 UNIQUE(city_id, forecast_date)
             );
         """)
-        print("Created 'daily_weather' table")
+        logger.info("Created 'daily_weather' table")
         
         # Commit changes
         conn.commit()
-        print("\nDatabase schema created successfully!")
+        logger.info("Database schema created successfully!")
         
     except Exception as e:
-        print(f"Error: {e}")
+        logger.error(f"Error creating database schema: {e}")
         
     finally:
         if cursor:
             cursor.close()
         if conn:
             conn.close()
-        print("Database connection closed.")
+        logger.info("Database connection closed.")
 
 if __name__ == "__main__":
     create_tables()

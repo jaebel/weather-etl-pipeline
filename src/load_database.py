@@ -2,10 +2,16 @@ import psycopg2
 import os
 from dotenv import load_dotenv
 from extract import fetch_weather_data, load_config
-from validate_data import validate_weather_record, log_validation_results
+from validate_data import validate_weather_record
+import logging
+from logger_config import setup_logging
 
 # Load environment variables
 load_dotenv()
+
+# Configure logging
+setup_logging('pipeline.log')
+logger = logging.getLogger(__name__)
 
 def get_db_connection():
     """Create and return a database connection"""
@@ -250,25 +256,25 @@ def main():
         # Connect to database
         conn = get_db_connection()
         cursor = conn.cursor()
-        print("Connected to database successfully!")
+        logger.info("Connected to database successfully!")
         
         # Load config (cities from config.yaml)
         config = load_config()
         
         # Process each city
         for city in config['cities']:
-            print(f"\nProcessing {city['name']}...")
+            logger.info(f"Processing {city['name']}...")
             
             # Extract: Fetch weather data from API
             api_response = fetch_weather_data(city['lat'], city['lon'])
             
             if not api_response:
-                print(f"Failed to fetch data for {city['name']}")
+                logger.error(f"Failed to fetch data for {city['name']}")
                 continue
             
             # Insert or get city
             city_id = insert_or_get_city(cursor, city, api_response)
-            print(f"City ID: {city_id}")
+            logger.info(f"City ID: {city_id}")
             
             # Process each day of weather data
             weather_days = api_response.get('data', [])
@@ -277,12 +283,12 @@ def main():
                 is_valid, warnings = validate_weather_record(day_data)
     
                 if not is_valid:
-                    print(f"Skipping record: {warnings}")
+                    logger.warning(f"Skipping record: {warnings}")
                     continue
                 
                 # Log warnings (but still insert)
                 if warnings:
-                    log_validation_results(city['name'], day_data.get('datetime'), warnings)
+                    logger.warning(f"Data quality warnings for {city['name']} on {day_data.get('datetime')}: {warnings}")
 
                 # Transform: Convert API format to DB format
                 transformed_data = transform_weather_record(day_data)
@@ -290,14 +296,14 @@ def main():
                 # Load: Insert into database
                 insert_weather_record(cursor, city_id, transformed_data)
             
-            print(f"Loaded {len(weather_days)} days of weather data for {city['name']}")
+            logger.info(f"Loaded {len(weather_days)} days of weather data for {city['name']}")
         
         # Commit all changes
         conn.commit()
-        print("\nETL pipeline completed successfully!")
+        logger.info("ETL pipeline completed successfully!")
         
     except Exception as e:
-        print(f"Error: {e}")
+        logger.error(f"Error in ETL pipeline: {e}")
         if conn:
             conn.rollback()
     
@@ -306,7 +312,7 @@ def main():
             cursor.close()
         if conn:
             conn.close()
-        print("Database connection closed.")
+        logger.info("Database connection closed.")
 
 if __name__ == "__main__":
     main()

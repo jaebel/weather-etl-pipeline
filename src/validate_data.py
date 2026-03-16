@@ -1,5 +1,8 @@
 import re
 from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 def validate_date_format(date_str):
     """
@@ -121,9 +124,3 @@ def validate_weather_record(day_data):
     
     # Record is valid if date exists - warnings are extra details
     return True, warnings
-
-def log_validation_results(city_name, forecast_date, warnings):
-    if warnings:
-        print(f"Data quality warnings for {city_name} on {forecast_date}:")
-        for warning in warnings:
-            print(f"  - {warning}")
